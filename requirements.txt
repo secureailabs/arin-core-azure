@@ -1,0 +1,38 @@
+black==22.3.0
+flake8==4.0.1
+pandas==1.4.1
+openai
+
+# torch-1.13.1-cp38-cp38-manylinux1_x86_64.whl
+torch==1.13.1
+transformers==4.28.1
+
+# upload and such, get rid of these!
+azure-storage-blob==12.16.0
+azure-identity==1.13.0
+azure-mgmt-cognitiveservices==13.4.0
+azure-mgmt-resource==23.0.1
+
+# bag of words dependancies
+scikit-learn==1.2.2
+
+#TODO test dependancies
+pytest==6.2.4
+gdown==4.6.4
+
+#TODO packageing dependancies
+wheel==0.40.0
+twine==4.0.2
+
+
+# todo integrade this
+#pip3 install fschat
+#sentry-sdk 1.23.1 requires urllib3<2.0.0, but you have urllib3 2.0.2 which is incompatible.
+# git clone https://github.com/lm-sys/FastChat.git
+# cd FastChat
+
+
+# python3 -m fastchat.model.apply_delta \
+#    --base-model-path /path/to/llama-7b \
+#    --target-model-path /path/to/output/vicuna-7b \
+#    --delta-path lmsys/vicuna-7b-delta-v1.1
