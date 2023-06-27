@@ -3,7 +3,7 @@ import re
 from setuptools import find_packages, setup
 
 version = ""
-with open("arin-core-azure/__init__.py") as f:
+with open("arin_core_azure/__init__.py") as f:
     version = re.search(r'^__version__\s*=\s*[\'"]([^\'"]*)[\'"]', f.read(), re.MULTILINE).group(1)
 
 requirements = []
