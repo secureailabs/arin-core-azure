@@ -1,10 +1,13 @@
 from dataclasses import dataclass
+from typing import Optional
 
 from azure.identity import ClientSecretCredential
 from azure.mgmt.network import NetworkManagementClient
 from azure.mgmt.network.models import AzureFirewallIPConfiguration, PublicIPAddress, PublicIPAddressSku, SubResource
 from azure.mgmt.resource import ResourceManagementClient
 from azure.mgmt.resource.resources.models import Deployment, DeploymentMode, DeploymentProperties, ResourceGroup
+
+from arin_core_azure.base_helper import BaseHelper
 
 # @dataclass
 # class DeploymentInfo:
@@ -16,10 +19,14 @@ from azure.mgmt.resource.resources.models import Deployment, DeploymentMode, Dep
 #     id: str
 
 
-class SailAzure:
-    def __init__(self, client_id: str, client_secret: str, tenant_id: str) -> None:
-        """Authenticate using client_id and client_secret."""
-        self.credential = ClientSecretCredential(client_id=client_id, client_secret=client_secret, tenant_id=tenant_id)
+class DeploymentHelper(BaseHelper):
+    def __init__(
+        self,
+        client_id: Optional[str],
+        client_secret: Optional[str],
+        tenant_id: Optional[str],
+    ) -> None:
+        super().__init__(client_id, client_secret, tenant_id)
 
     def create_resource_group(self, subscription_id: str, resource_group_name: str, location: str):
         client = ResourceManagementClient(self.credential, subscription_id)
@@ -35,6 +42,13 @@ class SailAzure:
         assert response.properties is not None  # TODO this seems weird
         return response.properties.provisioning_state
 
+    def delete_resouce_group(self, subscription_id: str, resource_group_name: str):
+        client = ResourceManagementClient(self.credential, subscription_id)
+        delete_async_operation = client.resource_groups.begin_delete(resource_group_name)
+        delete_async_operation.wait()
+
+        print(delete_async_operation.status())
+
     def deploy_template(self, subscription_id: str, resource_group_name: str, template: str, parameters: str):
         """Deploy the template to a resource group."""
         client = ResourceManagementClient(self.credential, subscription_id)
@@ -49,13 +63,6 @@ class SailAzure:
         deployment_async_operation.wait()
 
         return deployment_async_operation.status()
-
-    def delete_resouce_group(self, subscription_id: str, resource_group_name: str):
-        client = ResourceManagementClient(self.credential, subscription_id)
-        delete_async_operation = client.resource_groups.begin_delete(resource_group_name)
-        delete_async_operation.wait()
-
-        print(delete_async_operation.status())
 
     def get_public_ip(self, subscription_id: str, resource_group_name: str, ip_resource_name: str) -> str:
         """Get the IP address of the resource."""

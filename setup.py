@@ -4,7 +4,7 @@ from setuptools import find_packages, setup
 
 version = ""
 with open("arin_core_azure/__init__.py") as f:
-    version = re.search(r'^__version__\s*=\s*[\'"]([^\'"]*)[\'"]', f.read(), re.MULTILINE).group(1)
+    version = re.search(r'^__version__\s*=\s*[\'"]([^\'"]*)[\'"]', f.read(), re.MULTILINE).group(1)  # type: ignore
 
 requirements = []
 with open("requirements.txt") as file:

@@ -1,4 +1,4 @@
-from typing import List, Tuple
+from typing import List, Optional, Tuple
 
 from azure.identity import DefaultAzureCredential
 from azure.mgmt.cognitiveservices import CognitiveServicesManagementClient
@@ -6,14 +6,21 @@ from azure.mgmt.cognitiveservices.models import Account
 from azure.mgmt.resource.subscriptions import SubscriptionClient
 from azure.mgmt.resource.subscriptions.models import Subscription
 
+from arin_core_azure.base_helper import BaseHelper
 
-class CognitiveServicesHelper:
-    def __init__(self):
-        # Authenticate using default credentials
-        self.credential = DefaultAzureCredential()
+
+class CognitiveServicesHelper(BaseHelper):
+    def __init__(
+        self,
+        client_id: Optional[str] = None,
+        client_secret: Optional[str] = None,
+        tenant_id: Optional[str] = None,
+    ) -> None:
+        super().__init__(client_id, client_secret, tenant_id)
 
         # Initialize the subscription and compute management clients
         self.subscription_client = SubscriptionClient(self.credential)
+
         # Create a Cognitive Services Management client
 
     def list_subscription(self) -> List[Subscription]:
