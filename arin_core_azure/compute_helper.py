@@ -1,8 +1,9 @@
-from typing import List, Optional
+from typing import List, Optional, Tuple
 
 from azure.mgmt.compute import ComputeManagementClient
 from azure.mgmt.compute.models import VirtualMachine
 from azure.mgmt.network import NetworkManagementClient
+from azure.mgmt.resource import ResourceManagementClient
 from azure.mgmt.resource.subscriptions import SubscriptionClient
 
 from arin_core_azure.base_helper import BaseHelper
@@ -18,6 +19,23 @@ class ComputeHelper(BaseHelper):
         super().__init__(client_id, client_secret, tenant_id)
         # Initialize the subscription client
         self.subscription_client = SubscriptionClient(self.credential)
+
+    def list_vm(self, subscription_id: str) -> List[VirtualMachine]:
+        compute_client = ComputeManagementClient(self.credential, subscription_id)
+        list_vm = []
+        for vm in compute_client.virtual_machines.list_all():
+            list_vm.append(vm)
+        return list_vm
+
+    def list_vm_with_tag(self, subscription_id: str, tag_key: str, tag_value: str) -> List[VirtualMachine]:
+        # TODO there should be a faster way of doign this
+        list_vm = []
+        for vm in self.list_vm(subscription_id):
+            if vm.tags is not None:
+                if tag_key in vm.tags:
+                    if vm.tags[tag_key] == tag_value:
+                        list_vm.append(vm)
+        return list_vm
 
     def find_vms_of_type(self, subscription_id: str, vm_size: str) -> List[VirtualMachine]:
         compute_client = ComputeManagementClient(self.credential, subscription_id)
@@ -45,8 +63,12 @@ class ComputeHelper(BaseHelper):
         network_interface_id = network_profile.network_interfaces[0].id
         return str(network_interface_id).split("/")[-1]
 
-    def get_vm_public_address(self, subscription_id: str, resource_group_name: str, vm: VirtualMachine) -> str:
+    def get_vm_admin_username(self, vm: VirtualMachine) -> str:
+        return vm.os_profile.admin_username
+
+    def get_vm_public_ip_address(self, vm: VirtualMachine) -> str:
         # get clients
+        subscription_id, resource_group_name, virtual_machine_name = self.get_vm_locator(vm)
         network_client = NetworkManagementClient(self.credential, subscription_id)
         network_interface_name = self.get_network_interface_name(vm)
         network_interface = network_client.network_interfaces.get(resource_group_name, network_interface_name)
@@ -63,6 +85,13 @@ class ComputeHelper(BaseHelper):
     ) -> VirtualMachine:
         compute_client = ComputeManagementClient(self.credential, subscription_id)
         return compute_client.virtual_machines.get(resource_group_name, virtual_machine_name)  # type: ignore
+
+    def get_vm_locator(self, vm: VirtualMachine) -> Tuple[str, str, str]:
+        id_part = str(vm.id).split("/")
+        subscription_id = id_part[2]
+        resource_group_name = id_part[4]
+        virtual_machine_name = id_part[8]
+        return subscription_id, resource_group_name, virtual_machine_name
 
     def get_vm_resource_group_name(self, vm: VirtualMachine) -> str:
         return str(vm.id).split("/")[4]
@@ -96,13 +125,6 @@ class ComputeHelper(BaseHelper):
             .instance_view.statuses[1]
             .display_status
         )
-
-    def list_vm(self, subscription_id: str) -> List[VirtualMachine]:
-        compute_client = ComputeManagementClient(self.credential, subscription_id)
-        list_vm = []
-        for vm in compute_client.virtual_machines.list_all():
-            list_vm.append(vm)
-        return list_vm
 
     def start_vm(
         self,

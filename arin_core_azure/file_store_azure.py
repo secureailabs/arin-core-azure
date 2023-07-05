@@ -2,7 +2,6 @@ import os
 
 from azure.storage.blob import BlobServiceClient
 
-
 class FileStoreAzure:
     def __init__(self, path_dir_cache: str, container_name: str) -> None:
         if path_dir_cache == None:
@@ -56,7 +55,7 @@ class FileStoreAzure:
         self,
         file_name: str,
     ) -> None:
-        # TODO check hashe
+        # TODO check hash
         # TODO make verbose
         path_file = self.get_file_path(file_name)
         blob_client = self.container_client.get_blob_client(file_name)
@@ -64,7 +63,7 @@ class FileStoreAzure:
             download_file.write(blob_client.download_blob().readall())
 
     def upload_file(self, file_name: str) -> None:
-        # TODO check hashe
+        # TODO check hash
         # TODO make verbose
         path_file = self.get_file_path(file_name)
         if not os.path.isfile(path_file):

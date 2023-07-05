@@ -26,6 +26,20 @@ class ResourceHelper(BaseHelper):
             list_subscription.append(subscription)
         return list_subscription
 
+    def list_subscription_id(self) -> List[str]:
+        # Get the subscription ID using the subscription name
+        list_subscription_id = []
+        for subscription in self.subscription_client.subscriptions.list():
+            list_subscription_id.append(subscription.subscription_id)
+        return list_subscription_id
+
+    def list_subscription_name(self) -> List[str]:
+        # Get the subscription ID using the subscription name
+        list_subscription_name = []
+        for subscription in self.subscription_client.subscriptions.list():
+            list_subscription_name.append(subscription.display_name)
+        return list_subscription_name
+
     def get_subscription_by_id(self, subscription_id: str) -> Subscription:
         # Get the subscription using the subscription name
         subscription = self.subscription_client.subscriptions.get(subscription_id=subscription_id)
