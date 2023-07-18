@@ -2,8 +2,9 @@ import os
 
 from azure.storage.blob import BlobServiceClient
 
+
 class FileStoreAzure:
-    def __init__(self, path_dir_cache: str, container_name: str) -> None:
+    def __init__(self, path_dir_cache: str, connection_string: str, container_name: str) -> None:
         if path_dir_cache == None:
             raise ValueError("path_dir_cache is None")
         if container_name == None:
@@ -15,10 +16,7 @@ class FileStoreAzure:
         if not os.path.isdir(self.path_dir_cache):
             os.makedirs(self.path_dir_cache)
 
-        self.connection_string = os.environ["AZURE_CONNECTIONSTRING_DATASETS"]
-        if self.connection_string is None:
-            raise ValueError("AZURE_CONNECTIONSTRING_DATASETS is not set")
-
+        self.connection_string = connection_string
         self.blob_service_client = BlobServiceClient.from_connection_string(self.connection_string)
         # Check if the container exists
         self.container_client = self.blob_service_client.get_container_client(self.container_name)

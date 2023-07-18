@@ -31,11 +31,16 @@ class ComputeHelper(BaseHelper):
         # TODO there should be a faster way of doign this
         list_vm = []
         for vm in self.list_vm(subscription_id):
-            if vm.tags is not None:
-                if tag_key in vm.tags:
-                    if vm.tags[tag_key] == tag_value:
-                        list_vm.append(vm)
+            tags = self.vm_get_tags(vm)
+            if tag_key in tags:
+                if tags[tag_key] == tag_value:
+                    list_vm.append(vm)
         return list_vm
+
+    def vm_get_tags(self, vm: VirtualMachine) -> dict:
+        if vm.tags is None:
+            return {}
+        return vm.tags
 
     def find_vms_of_type(self, subscription_id: str, vm_size: str) -> List[VirtualMachine]:
         compute_client = ComputeManagementClient(self.credential, subscription_id)
@@ -79,6 +84,17 @@ class ComputeHelper(BaseHelper):
                 ip_address = public_ip_address.ip_address
                 return ip_address
         raise ValueError(f"Public IP address not found for VM {vm.name}")
+
+    def get_vm_private_ip_address(self, vm: VirtualMachine) -> str:
+        # get clients
+        subscription_id, resource_group_name, virtual_machine_name = self.get_vm_locator(vm)
+        network_client = NetworkManagementClient(self.credential, subscription_id)
+        network_interface_name = self.get_network_interface_name(vm)
+        network_interface = network_client.network_interfaces.get(resource_group_name, network_interface_name)
+        for ip_configuration in network_interface.ip_configurations:
+            if ip_configuration.private_ip_address is not None:
+                return ip_configuration.private_ip_address  # TODO this is differnt than public, weird AF
+        raise ValueError(f"Private IP address not found for VM {vm.name}")
 
     def get_vm_by_name(
         self, subscription_id: str, resource_group_name: str, virtual_machine_name: str
