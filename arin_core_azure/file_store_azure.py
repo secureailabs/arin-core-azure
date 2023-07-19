@@ -1,4 +1,5 @@
 import os
+from typing import List
 
 from azure.storage.blob import BlobServiceClient
 
@@ -30,6 +31,12 @@ class FileStoreAzure:
 
     def get_file_path(self, file_name):
         return os.path.join(self.path_dir_cache, file_name)
+
+    def list_key(self) -> List[str]:
+        list_key = []
+        for blob in self.container_client.list_blobs():
+            list_key.append(blob.name)
+        return list_key
 
     def has_file(self, file_name: str) -> bool:
         path_file = self.get_file_path(file_name)
