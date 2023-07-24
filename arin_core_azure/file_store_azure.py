@@ -56,6 +56,17 @@ class FileStoreAzure:
             self.download_file(file_name)
         return path_file
 
+    def delete_file(
+        self,
+        file_name: str,
+    ) -> None:
+        path_file = self.get_file_path(file_name)
+        if os.path.isfile(path_file):
+            os.remove(path_file)
+        blob_client = self.container_client.get_blob_client(file_name)
+        if blob_client.exists():
+            blob_client.delete_blob()
+
     def download_file(
         self,
         file_name: str,

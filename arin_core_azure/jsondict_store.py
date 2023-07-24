@@ -51,9 +51,20 @@ class JsondictStore:
         with open(path_file_value, "r") as file:
             return json.load(file)
 
-    def save_json(self, jsondict_key: dict, jsondict_value: dict) -> None:
+    def save_json_for_dict(self, jsondict_key: dict, jsondict_value: dict) -> None:
         file_name = self.get_file_name_for_dict(jsondict_key)
         path_file_value = self.file_store.get_file_path(file_name)
         with open(path_file_value, "w") as file:
             json.dump(jsondict_value, file, indent=4)
         self.file_store.upload_file(file_name)
+
+    def save_json(self, key: str, jsondict_value: dict) -> None:
+        file_name = self.get_file_name(key)
+        path_file_value = self.file_store.get_file_path(file_name)
+        with open(path_file_value, "w") as file:
+            json.dump(jsondict_value, file, indent=4)
+        self.file_store.upload_file(file_name)
+
+    def delete_json_for_dict(self, jsondict_key: dict) -> None:
+        file_name = self.get_file_name_for_dict(jsondict_key)
+        self.file_store.delete_file(file_name)
