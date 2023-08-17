@@ -19,7 +19,7 @@ setup(
     install_requires=requirements,
     packages=find_packages(),
     package_data={},
-    python_requires="==3.8.10",
+    python_requires=">=3.8",
     author="Jaap Oosterbroek",
     author_email="jaap@secureailabs.com",
     description="A library to support the sail llm projects",

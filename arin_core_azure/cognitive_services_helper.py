@@ -58,6 +58,11 @@ class CognitiveServicesHelper(BaseHelper):
         client = CognitiveServicesManagementClient(self.credential, subscription_id)
         return client.accounts.get(resource_group_name=resource_group_name, account_name=account_name)
 
+    def get_account_for_account_id(self, account_id: str) -> Account:
+        subscription_id, resource_group_name, account_name = self.get_account_locator_data_for_account_id(account_id)
+        client = CognitiveServicesManagementClient(self.credential, subscription_id)
+        return client.accounts.get(resource_group_name=resource_group_name, account_name=account_name)
+
     def get_account_endpoint(self, account: Account) -> str:
         return account.properties.endpoints["OpenAI Language Model Instance API"]  # type: ignore
 
@@ -66,15 +71,23 @@ class CognitiveServicesHelper(BaseHelper):
         client = CognitiveServicesManagementClient(self.credential, subscription_id)
         return client.accounts.list_keys(resource_group_name, account_name).key1  # type: ignore # TODO no idea what key 2 does
 
-    def get_account_engine_name(self, account: Account) -> str:
+    def get_account_list_engine_name(self, account: Account) -> str:
         subscription_id, resource_group_name, account_name = self.get_account_locator_data(account)
         client = CognitiveServicesManagementClient(self.credential, subscription_id)
+        list_engine_name = []
         for deployment in client.deployments.list(resource_group_name, account_name):
-            return deployment.name  # type: ignore
-        raise Exception(f"No deployment found in account {account.id}")
+            list_engine_name.append(deployment.name)  # type: ignore
+        return list_engine_name
 
     def get_account_locator_data(self, account: Account) -> Tuple[str, str, str]:
         id_part = str(account.id).split("/")
+        subscription_id = id_part[2]
+        resource_group_name = id_part[4]
+        account_name = id_part[8]
+        return subscription_id, resource_group_name, account_name
+
+    def get_account_locator_data_for_account_id(self, account_id: str) -> Tuple[str, str, str]:
+        id_part = account_id.split("/")
         subscription_id = id_part[2]
         resource_group_name = id_part[4]
         account_name = id_part[8]
@@ -94,6 +107,12 @@ class CognitiveServicesHelper(BaseHelper):
             for account in client.accounts.list():
                 list_account.append(account)
         return list_account
+
+    def list_account_name(self) -> List[str]:
+        list_account_name = []
+        for account in self.list_account():
+            list_account_name.append(account.name)
+        return list_account_name
 
     def list_account_for_kind(self, kind: str) -> List[Account]:
         list_account_selected = []

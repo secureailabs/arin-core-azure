@@ -1,5 +1,7 @@
 black==22.3.0
 flake8==4.0.1
+wheel==0.40.0
+twine==4.0.2
 
 # upload and such, get rid of these!
 azure-storage-blob==12.16.0
@@ -16,9 +18,6 @@ paramiko==3.2.0
 #TODO test dependancies
 pytest==6.2.4
 
-#TODO packageing dependancies
-wheel==0.40.0
-twine==4.0.2
 
 
 
