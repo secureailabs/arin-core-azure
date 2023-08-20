@@ -1,6 +1,24 @@
 import os
 
 
+def read_package_init() -> dict:
+    with open("module_name.txt", "r") as file:
+        module_name = file.read()
+    path_file_init_file = os.path.join(module_name, "__init__.py")
+    with open(path_file_init_file, "r") as file:
+        list_line = file.readlines()
+    dict_init = {}
+    for line in list_line:
+        if line.startswith("__"):
+            key, value = line.split("=")
+            key = key.strip()
+            value = value.split("#")[0]
+            value = value.strip()
+            value = value.strip('"')
+            dict_init[key] = value
+    return dict_init
+
+
 def get_dir_from_env(
     environment_variable: str,
     create_if_missing=False,

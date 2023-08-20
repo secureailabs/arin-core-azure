@@ -2,9 +2,9 @@ import os
 import shutil
 import subprocess
 
-SAIL_PYPI_REPOSITORY_URL = os.environ["SAIL_PYPI_REPOSITORY_URL"]
-SAIL_PYPI_USERNAME = os.environ["SAIL_PYPI_USERNAME"]
-SAIL_PYPI_PASSWORD = os.environ["SAIL_PYPI_PASSWORD"]
+SAIL_PYPI_REPOSITORY_URL = os.environ["ARIN_PYPI_REPOSITORY_URL"]
+SAIL_PYPI_USERNAME = os.environ["ARIN_PYPI_USERNAME"]
+SAIL_PYPI_PASSWORD = os.environ["ARIN_PYPI_PASSWORD"]
 
 # remove old build
 shutil.rmtree("dist", ignore_errors=True)
