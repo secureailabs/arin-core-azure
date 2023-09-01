@@ -26,6 +26,13 @@ setup(
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://nowhere.not",
+    entry_points={
+        "console_scripts": [
+            "build_docker=arin_core_azure.script.build_docker:main",
+            "release_docker=arin_core_azure.script.release_docker:main",
+            "deploy_docker_local=arin_core_azure.script.deploy_docker_local:main",
+        ]
+    },
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: SAIL :: Propritary",
