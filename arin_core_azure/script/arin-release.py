@@ -57,7 +57,8 @@ def main() -> None:
     with open("setup.py", "r") as f:
         file_contents = f.read()
     dict_config = read_setup_config()
-    print(dict_config)
+    package_name = dict_config["version_variable"].split("/")[0]
+    print(package_name)
     exit()
     package_name = file_contents.split("name='")[1].split("'")[0]
     print(f"package name: {package_name}")
