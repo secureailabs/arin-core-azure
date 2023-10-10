@@ -31,7 +31,14 @@ def main() -> None:
 
     # get version
     result = subprocess.run("python setup.py --version", capture_output=True, shell=True)
-    print(result.stdout.decode("utf-8"))
+    current_version = result.stdout.decode("utf-8").strip()
+    print(f"current verson: {current_version}")
+
+    # get latest tagged version #TODO figure out how to deal with patches
+    result = subprocess.run("git tag", capture_output=True, shell=True)
+    tagged_versions = result.stdout.decode("utf-8").strip().split("\n")
+    latest_tagged_version = tagged_versions[-1]
+    print(f"latest tagged version: {latest_tagged_version}")
 
     # ARIN_PYPI_REPOSITORY_URL = os.environ["ARIN_PYPI_REPOSITORY_URL"]
     # ARIN_PYPI_USERNAME = os.environ["ARIN_PYPI_USERNAME"]
