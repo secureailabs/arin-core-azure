@@ -1,3 +1,4 @@
+import json
 import os
 import shutil
 import subprocess
@@ -47,18 +48,34 @@ def main() -> None:
         usage()
         sys.exit(1)
 
+    if len(sys.argv) == 4:  # TODO commig changes
+        print("ignoring changes")
+        check_changes = False
+    else:
+        check_changes = True
+
     # check if there are open git changes
-    result = subprocess.run("git status --porcelain", capture_output=True, shell=True)
-    if result.stdout.decode("utf-8") != "":
-        print("Below is a list of open git changes. Please commit or stash them.")
-        print(result.stdout.decode("utf-8"))
-        sys.exit(1)
+    if check_changes:
+        result = subprocess.run("git status --porcelain", capture_output=True, shell=True)
+        if result.stdout.decode("utf-8") != "":
+            print("Below is a list of open git changes. Please commit or stash them.")
+            print(result.stdout.decode("utf-8"))
+            sys.exit(1)
+
     # get package name
     with open("setup.py", "r") as f:
         file_contents = f.read()
+
+    # read setup config
     dict_config = read_setup_config()
+
+    # read release config
+    with open("release.json", "r") as f:
+        release_config = json.load(f)
+
+    # get module name
     module_name = dict_config["version_variable"].split("/")[0]
-    print(f"package name: {module_name}")
+    print(f"module name: {module_name}")
 
     # get version
     result = subprocess.run("python setup.py --version", capture_output=True, shell=True)
@@ -79,45 +96,51 @@ def main() -> None:
             target_version = current_version
             print(f"Latest tagged version does not match current version. Releasing as {target_version}")
         else:
+            # TODO only tag if there are changes
             target_version = bump_version(current_version, release_type)
             print(f"Latest tagged version match current version. Bumping and releasing as as {target_version}")
 
-    # update version in init.py
-    with open(f"{package_name}/__init__.py", "r") as f:
-        file_contents = f.read()
-    file_contents = file_contents.replace(current_version, target_version)
-    with open(f"{package_name}/__init__.py", "w") as f:
-        f.write(file_contents)
-    exit()
+            # update version in init.py
+            with open(f"{module_name}/__init__.py", "r") as f:
+                file_contents = f.read()
+            file_contents = file_contents.replace(current_version, target_version)
+            with open(f"{module_name}/__init__.py", "w") as f:
+                f.write(file_contents)
 
-    # commit changes
-    print("commit changes version bump")
-    subprocess.run(f"git add {package_name}/__init__.py")
-    subprocess.run(f"git commit -m 'bump version to {target_version}'")
+            # commit version bump
+            print("commit changes version bump")
+            subprocess.run(f"git add {module_name}/__init__.py")
+            subprocess.run(f'git commit -m "bump version to {target_version}"', shell=True)
+            subprocess.run(f"git push", shell=True)
 
     # tag version
-    # subprocess.run(f"git tag {target_version}")
-    # subprocess.run(f"git push origin {target_version}")
+    subprocess.run(f"git tag {target_version}")
+    subprocess.run(f"git push origin {target_version}")
 
-    # ARIN_PYPI_REPOSITORY_URL = os.environ["ARIN_PYPI_REPOSITORY_URL"]
-    # ARIN_PYPI_USERNAME = os.environ["ARIN_PYPI_USERNAME"]
-    # ARIN_PYPI_PASSWORD = os.environ["ARIN_PYPI_PASSWORD"]
+    # remove old build
+    shutil.rmtree("dist", ignore_errors=True)
 
-    # # remove old build
-    # shutil.rmtree("dist", ignore_errors=True)
+    # build dist
+    subprocess.run(f"python setup.py bdist_wheel")
 
-    # # build dist
-    # subprocess.run(f"python setup.py bdist_wheel")
+    # upload result
+    for code_release_target in release_config["list_code_release_target"]:
+        release_target_type = code_release_target["release_target_type"]
+        if release_target_type == "pypi":
+            repository_url = code_release_target["repository_url"]
+            username = code_release_target["username"]
+            password = code_release_target["password"]
 
-    # # upload result
-    # list_name_file = os.listdir("dist")
-    # print(list_name_file)
-    # for name_file in list_name_file:
-    #     if name_file.endswith(".whl"):
-    #         path_file = os.path.join("dist", name_file)
-    #         subprocess.run(
-    #             f"twine upload {path_file} --repository-url {ARIN_PYPI_REPOSITORY_URL} --username {ARIN_PYPI_USERNAME} --password {ARIN_PYPI_PASSWORD}"
-    #         )
+            list_name_file = os.listdir("dist")
+            print(list_name_file)
+            for name_file in list_name_file:
+                if name_file.endswith(".whl"):
+                    path_file = os.path.join("dist", name_file)
+                    subprocess.run(
+                        f"twine upload {path_file} --repository-url {repository_url} --username {username} --password {password}"
+                    )
+        else:
+            print(f"release_target_type {release_target_type} not supported")
 
 
 if __name__ == "__main__":
