@@ -4,6 +4,17 @@ import subprocess
 import sys
 
 
+def read_setup_config() -> dict:
+    with open("setup.cfg", "r") as f:
+        file_contents = f.read()
+    config = {}
+    for line in file_contents.split("\n"):
+        if "=" in line:
+            key, value = line.split("=")
+            config[key.strip()] = value.strip()
+    return config
+
+
 def usage() -> None:
     print("Usage: python arin-release.py [patch, minor, major], [code, docker, all]")
 
@@ -45,6 +56,9 @@ def main() -> None:
     # get package name
     with open("setup.py", "r") as f:
         file_contents = f.read()
+    dict_config = read_setup_config()
+    print(dict_config)
+    exit()
     package_name = file_contents.split("name='")[1].split("'")[0]
     print(f"package name: {package_name}")
 
