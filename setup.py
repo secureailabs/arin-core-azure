@@ -31,6 +31,8 @@ setup(
             "build_docker=arin_core_azure.script.build_docker:main",
             "release_docker=arin_core_azure.script.release_docker:main",
             "deploy_docker_local=arin_core_azure.script.deploy_docker_local:main",
+            "release_code=arin_core_azure.script.release_code:main",
+            "killall_python_win=arin_core_azure.script.killall_python_win:main",
         ]
     },
     classifiers=[
