@@ -51,7 +51,8 @@ def main() -> None:
     # get latest tagged version #TODO figure out how to deal with patches
     result = subprocess.run("git tag", capture_output=True, shell=True)
     tagged_versions = result.stdout.decode("utf-8").strip().split("\n")
-    if len(tagged_versions) == 0:
+
+    if (len(tagged_versions) == 0) or (len(result.stdout.decode("utf-8").strip()) == 0):
         target_version = current_version
         print(f"No tagged versions found. Releasing as {target_version}")
     else:
