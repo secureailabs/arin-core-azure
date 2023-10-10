@@ -1,11 +1,36 @@
 import os
 import shutil
 import subprocess
+import sys
+
+
+def usage() -> None:
+    print("Usage: python arin-release.py [patch, minor, major], [code, docker, all]")
 
 
 def main() -> None:
+    # check arguments and set default values
+    if len(sys.argv) < 3:
+        usage()
+        sys.exit(1)
+    release_type = sys.argv[1]
+    if release_type not in ["patch", "minor", "major"]:
+        usage()
+        sys.exit(1)
+    release_target = sys.argv[2]
+    if release_target not in ["code", "docker", "all"]:
+        usage()
+        sys.exit(1)
+
     # check if there are open git changes
     result = subprocess.run("git status --porcelain", capture_output=True, shell=True)
+    if result.stdout.decode("utf-8") != "":
+        print("Below is a list of open git changes. Please commit or stash them.")
+        print(result.stdout.decode("utf-8"))
+        sys.exit(1)
+
+    # get version
+    result = subprocess.run("python setup.py --version", capture_output=True, shell=True)
     print(result.stdout.decode("utf-8"))
 
     # ARIN_PYPI_REPOSITORY_URL = os.environ["ARIN_PYPI_REPOSITORY_URL"]
