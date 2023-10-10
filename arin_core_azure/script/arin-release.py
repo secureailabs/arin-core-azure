@@ -42,6 +42,11 @@ def main() -> None:
         print("Below is a list of open git changes. Please commit or stash them.")
         print(result.stdout.decode("utf-8"))
         sys.exit(1)
+    # get package name
+    with open("setup.py", "r") as f:
+        file_contents = f.read()
+    package_name = file_contents.split("name='")[1].split("'")[0]
+    print(f"package name: {package_name}")
 
     # get version
     result = subprocess.run("python setup.py --version", capture_output=True, shell=True)
@@ -51,7 +56,7 @@ def main() -> None:
     # get latest tagged version #TODO figure out how to deal with patches
     result = subprocess.run("git tag", capture_output=True, shell=True)
     tagged_versions = result.stdout.decode("utf-8").strip().split("\n")
-
+    target_version = ""
     if (len(tagged_versions) == 0) or (len(result.stdout.decode("utf-8").strip()) == 0):
         target_version = current_version
         print(f"No tagged versions found. Releasing as {target_version}")
@@ -64,6 +69,23 @@ def main() -> None:
         else:
             target_version = bump_version(current_version, release_type)
             print(f"Latest tagged version match current version. Bumping and releasing as as {target_version}")
+
+    # update version in init.py
+    with open(f"{package_name}/__init__.py", "r") as f:
+        file_contents = f.read()
+    file_contents = file_contents.replace(current_version, target_version)
+    with open(f"{package_name}/__init__.py", "w") as f:
+        f.write(file_contents)
+    exit()
+
+    # commit changes
+    print("commit changes version bump")
+    subprocess.run(f"git add {package_name}/__init__.py")
+    subprocess.run(f"git commit -m 'bump version to {target_version}'")
+
+    # tag version
+    # subprocess.run(f"git tag {target_version}")
+    # subprocess.run(f"git push origin {target_version}")
 
     # ARIN_PYPI_REPOSITORY_URL = os.environ["ARIN_PYPI_REPOSITORY_URL"]
     # ARIN_PYPI_USERNAME = os.environ["ARIN_PYPI_USERNAME"]
